@@ -64,6 +64,30 @@ namespace Sitecore.Support.ContentSearch.Client.Forms
             AddNumberOfTerms(name);
         }
 
+        protected override void BuildIndexes()
+        {
+            var selected = new ListString(Registry.GetString("/Current_User/Rebuild Search Index/Selected"));
+            var indexMap = new ListString();
+            this.AddBreak(this.translate.Text(Localization.Texts.LocalIndexes));
+            foreach (var index in ContentSearchManager.Indexes)
+            {
+                if (index.Group == IndexGroup.Experience)
+                {
+                    continue;
+                }
+
+                if (!ContentSearchManager.Locator.GetInstance<ISearchIndexSwitchTracker>().IsIndexOn(index.Name))
+                {
+                    this.AddBreak(index.Name + " is offline."); //355209
+                    continue;
+                }
+
+                this.BuildIndexCheckbox(index.Name, index.Name, selected, indexMap);
+            }
+
+            this.IndexMap = indexMap.ToString();
+        }
+
         private void AddThroughputTime(string name, ISearchIndexSummary summary)
         {
             var rebuildThroughputTime = string.Format("<p> <strong>{0}: </strong> 0 {1}</p>",
